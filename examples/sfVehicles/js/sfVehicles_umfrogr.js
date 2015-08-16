@@ -12,7 +12,9 @@ var center = locations["FirebaseHQ"];
 var radiusInKm = 0.5;
 
 // Get a reference to the Firebase public transit open data set
-var transitFirebaseRef = new Firebase("https://publicdata-transit.firebaseio.com/")
+//var transitFirebaseRef = new Firebase("https://publicdata-transit.firebaseio.com/")
+var transitFirebaseRef = new Firebase("https://blinding-torch-8102.firebaseio.com/")
+
 
 // Create a new GeoFire instance, pulling data from the public transit data
 var geoFire = new GeoFire(transitFirebaseRef.child("_geofire"));
