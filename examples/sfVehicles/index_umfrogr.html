@@ -3,13 +3,14 @@
 <head>
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
 
-  <title>Query Realtime SF Bus Locations With GeoFire 2.0</title>
+  <title>Umfrogr (with GeoFire 2.0)</title>
 
   <!-- STYLESHEETS -->
   <link href="css/animate.min.css" rel="stylesheet">
   <link href="css/font-awesome.min.css" rel="stylesheet">
   <link href="css/buttons.css" rel="stylesheet">
   <link href="css/site.css" rel="stylesheet">
+  <link href="css/site_umfrogr.css" rel="stylesheet">
 </head>
 
 <body>
@@ -27,6 +28,23 @@
       <h3>What is Umfrogr?</h3>
       <p>
         TODO
+      </p>
+      <h3>Create New Poll</h3>
+      <p>
+        <textarea id="new_poll" rows="15" maxlength="80">{
+  latLng: {
+    G: 37.78323134491339,
+    K: -122.4041748046875
+  },
+  question : "Nice location?",
+  answers : ["Yes", "No", "I don't know"]
+}</textarea>
+        <br/>
+        <button type="submit">Create Poll</button>
+      </p>
+      <h3>Selected Poll</h3>
+      <p>
+        <div class="selected_poll preformatted">None</div>
       </p>
     </section>
   </article>
@@ -46,6 +64,9 @@
 
   <!-- Lo-Dash -->
   <script src="js/vendor/lodash.min.js"></script>
+
+  <!-- jQuery -->
+  <script src="js/vendor/jquery-2.1.4.min.js"></script>
 
   <!-- Custom JavaScript -->
   <script src="js/sfVehicles_umfrogr.js"></script>

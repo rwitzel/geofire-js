@@ -1,0 +1,12 @@
+.preformatted {
+    font-family: monospace;
+    white-space: pre;
+}
+
+#sidebar {
+    width:500px;
+}
+
+#new_poll {
+    width:100%;
+}
