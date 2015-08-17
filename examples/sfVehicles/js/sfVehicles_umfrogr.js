@@ -119,14 +119,14 @@ function initializeMap() {
     }, 10);
     google.maps.event.addListener(circle, "drag", updateCriteria);
 
-    var setPositionInNewPoll = function(evt) {
-        var val = eval("x = " + $("#new_poll").val());
-        val.latLng = evt.latLng;
-        $("#new_poll").val(JSON.stringify(val, 0, 2));
-    }
-
     map.addListener('click',setPositionInNewPoll );
     google.maps.event.addListener(circle, "click", setPositionInNewPoll);
+}
+
+var setPositionInNewPoll = function(evt) {
+    var val = eval("x = " + $("#new_poll").val());
+    val.latLng = evt.latLng;
+    $("#new_poll").val(JSON.stringify(val, 0, 2));
 }
 
 /**********************/
