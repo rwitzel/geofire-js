@@ -31,6 +31,26 @@ var geoQuery = geoFire.query({
     radius: radiusInKm
 });
 
+var init = false;
+if (init) {
+    transitFirebaseRef.child("polls").set(
+        [
+            {
+                "latLng": {
+                    "G": 37.78323134491339,
+                    "K": -122.4041748046875
+                },
+                "question": "Nice location?",
+                "answers": [
+                    "Yes",
+                    "No",
+                    "I don't know"
+                ]
+            }
+        ]
+    );
+}
+
 /* Adds new vehicle markers to the map when they enter the query */
 geoQuery.on("key_entered", function (vehicleId, vehicleLocation) {
     // Specify that the vehicle has entered this query
@@ -38,7 +58,7 @@ geoQuery.on("key_entered", function (vehicleId, vehicleLocation) {
     vehiclesInQuery[vehicleId] = true;
 
     // Look up the vehicle's data in the Transit Open Data Set
-    transitFirebaseRef.child("sf-muni/vehicles").child(vehicleId).once("value", function (dataSnapshot) {
+    transitFirebaseRef.child("polls").child(vehicleId).once("value", function (dataSnapshot) {
         // Get the vehicle data from the Open Data Set
         vehicle = dataSnapshot.val();
 
@@ -49,7 +69,7 @@ geoQuery.on("key_entered", function (vehicleId, vehicleLocation) {
             vehiclesInQuery[vehicleId] = vehicle;
 
             // Create a new marker for the vehicle
-            vehicle.marker = createVehicleMarker(vehicle, getVehicleColor(vehicle));
+            vehicle.marker = createVehicleMarker(vehicle);
         }
     });
 });
@@ -129,24 +149,40 @@ var setPositionInNewPoll = function(evt) {
     $("#new_poll").val(JSON.stringify(val, 0, 2));
 }
 
+var createPoll = function(evt) {
+    var val = eval("x = " + $("#new_poll").val());
+
+    // create poll
+    var newChildRef = transitFirebaseRef.child("polls").push(); // this new, empty ref only exists locally
+    var newChildKey = newChildRef.key(); // we can get its id using key()
+    newChildRef.set(val); // now it is appended at the end of data at the server
+
+    console.log("poll created:", newChildRef);
+
+    // create location entry
+    var location = [val.latLng.G, val.latLng.K ];
+    geoFire.set("demo:" + newChildKey, location ).then(function() {
+        log(newChildKey + " initially set to [" + location + "]");
+    });
+
+}
+
+$("#btn_create_poll").click(createPoll);
+
 /**********************/
 /*  HELPER FUNCTIONS  */
 /**********************/
 /* Adds a marker for the inputted vehicle to the map */
-function createVehicleMarker(vehicle, vehicleColor) {
+function createVehicleMarker(vehicle) {
+    var text = vehicle.question.substring(0,6); // TODO escape string
     var marker = new google.maps.Marker({
-        icon: "https://chart.googleapis.com/chart?chst=d_bubble_icon_text_small&chld=" + vehicle.vtype + "|bbT|" + vehicle.routeTag + "|" + vehicleColor + "|eee",
-        position: new google.maps.LatLng(vehicle.lat, vehicle.lon),
+        icon: "https://chart.googleapis.com/chart?chst=d_bubble_icon_text_small&chld=star|bbT|" + text + "|FF6450|eee",
+        position: new google.maps.LatLng(vehicle.latLng.G, vehicle.latLng.K),
         optimized: true,
         map: map
     });
 
     return marker;
-}
-
-/* Returns a blue color code for outbound vehicles or a red color code for inbound vehicles */
-function getVehicleColor(vehicle) {
-    return ((vehicle.dirTag && vehicle.dirTag.indexOf("OB") > -1) ? "50B1FF" : "FF6450");
 }
 
 /* Returns true if the two inputted coordinates are approximately equivalent */
