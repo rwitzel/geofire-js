@@ -182,6 +182,12 @@ function createVehicleMarker(vehicle) {
         map: map
     });
 
+    google.maps.event.addListener(marker, "click", function() {
+        $(".selected_poll").text(JSON.stringify({
+            question: vehicle.question,
+            answers: vehicle.answers
+        }, 0, 2));
+    });
     return marker;
 }
 
