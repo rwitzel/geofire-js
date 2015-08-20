@@ -25,10 +25,6 @@
     </header>
 
     <section class="content">
-      <h3>What is Umfrogr?</h3>
-      <p>
-        TODO
-      </p>
       <h3>Create New Poll</h3>
       <p>
         <textarea id="new_poll">{
@@ -37,19 +33,26 @@
     "K": -122.4041748046875
   },
   "question": "Nice location?",
-  "answers": [
-    { text : "Yes", votes : 0 },
-    { text : "No", votes : 0 },
-    { text : "I don't know", votes : 0 }
-  ]
+  "answers": {
+    "0:Yes" : 0,
+    "1:No" : 0,
+    "2:I don't know" : 0
+  }
 }</textarea>
 
         <br/>
         <button id="btn_create_poll" type="submit">Create Poll</button>
       </p>
       <h3>Selected Poll</h3>
-      <div class="selected_poll preformatted">None</div>
-      <div class="selected_poll_answers"></div>
+      <div class="selected_poll"></div>
+      <div class="selected_poll_template">
+          <h2>{{question}}</h2>
+          <ul>
+            {{#answersMustache}}
+              <li><button class="answer" data-vehicleId="{{vehicleId}}">{{text}}</button> (Votes: {{votes}})</li>
+            {{/answersMustache}}
+          </ul>
+      </div>
       <p></p>
 
       <h3>Links</h3>
@@ -77,6 +80,9 @@
 
   <!-- jQuery -->
   <script src="js/vendor/jquery-2.1.4.min.js"></script>
+
+  <!-- mustache -->
+  <script src="js/vendor/mustache.min.js"></script>
 
   <!-- Custom JavaScript -->
   <script src="js/sfVehicles_umfrogr.js"></script>

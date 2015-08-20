@@ -32,24 +32,7 @@ var geoQuery = geoFire.query({
 });
 
 var init = false;
-if (init) {
-    transitFirebaseRef.child("polls").set(
-        [
-            {
-                "latLng": {
-                    "G": 37.78323134491339,
-                    "K": -122.4041748046875
-                },
-                "question": "Nice location?",
-                "answers": [
-                    "Yes",
-                    "No",
-                    "I don't know"
-                ]
-            }
-        ]
-    );
-}
+if (init) { transitFirebaseRef.child("polls").set([ { "anything": true } ] ); } /* init an array */
 
 /* Adds new vehicle markers to the map when they enter the query */
 geoQuery.on("key_entered", function (vehicleId, vehicleLocation) {
@@ -67,6 +50,7 @@ geoQuery.on("key_entered", function (vehicleId, vehicleLocation) {
         if (vehicle !== null && vehiclesInQuery[vehicleId] === true) {
             // Add the vehicle to the list of vehicles in the query
             vehiclesInQuery[vehicleId] = vehicle;
+            vehicle.vehicleId = vehicleId; /* we use in the click handler for voting */
 
             // Create a new marker for the vehicle
             vehicle.marker = createVehicleMarker(vehicle);
@@ -155,7 +139,7 @@ var createPoll = function(evt) {
     // create poll
     var newChildRef = transitFirebaseRef.child("polls").push(); // this new, empty ref only exists locally
     var newChildKey = newChildRef.key(); // we can get its id using key()
-    newChildRef.set(val); // now it is appended at the end of data at the server
+    newChildRef.set(val);
 
     console.log("poll created:", newChildRef);
 
@@ -183,13 +167,26 @@ function createVehicleMarker(vehicle) {
     });
 
     google.maps.event.addListener(marker, "click", function() {
-        $(".selected_poll").text(JSON.stringify({
-            question: vehicle.question,
-            answers: vehicle.answers
-        }, 0, 2));
+        var input = $(".selected_poll_template").html();
+        vehicle.answersMustache = [];
+        jQuery.each( vehicle.answers, function(key, value) {
+            console.log("key, value", key, value);
+            vehicle.answersMustache.push({text: key, votes: value});
+        });
+        var output = Mustache.render(input, vehicle);
+        $(".selected_poll").html(output);
     });
     return marker;
 }
+
+$(".selected_poll").on("click", "button", function(evt){
+    var vehicleId = $(evt.target).data("vehicleid");
+    var answerText = $(evt.target).text();
+    var vehicle = vehiclesInQuery[vehicleId];
+    var patch = {}
+    patch[answerText] = vehicle.answers[answerText] + 1;
+    transitFirebaseRef.child("polls").child(vehicleId).child("answers").update(patch);
+});
 
 /* Returns true if the two inputted coordinates are approximately equivalent */
 function coordinatesAreEquivalent(coord1, coord2) {

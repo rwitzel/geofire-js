@@ -11,3 +11,12 @@
     width:100%;
     height: 200px;
 }
+
+.selected_poll_template {
+    display:none;
+}
+
+.selected_poll {
+    border: 1px solid black;
+    padding: 10px;
+}
