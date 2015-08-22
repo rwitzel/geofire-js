@@ -141,8 +141,6 @@ var createPoll = function(evt) {
     var newChildKey = newChildRef.key(); // we can get its id using key()
     newChildRef.set(val);
 
-    console.log("poll created:", newChildRef);
-
     // create location entry
     var location = [val.latLng.G, val.latLng.K ];
     geoFire.set("demo:" + newChildKey, location ).then(function() {
@@ -167,26 +165,78 @@ function createVehicleMarker(vehicle) {
     });
 
     google.maps.event.addListener(marker, "click", function() {
-        var input = $(".selected_poll_template").html();
+
+        // update the div ".selected_poll"
         vehicle.answersMustache = [];
         jQuery.each( vehicle.answers, function(key, value) {
-            console.log("key, value", key, value);
             vehicle.answersMustache.push({text: key, votes: value});
         });
+        var input = $(".selected_poll_template").html();
         var output = Mustache.render(input, vehicle);
         $(".selected_poll").html(output);
+
+        // update the query that updates div ".selected_poll"
+        // step 1: unregister query for previous poll
+        if (currentVehicleCallback != null && currentVehicleId != null) {
+            transitFirebaseRef.child("polls").child(currentVehicleId).off('value', currentVehicleCallback);
+        }
+        // step 2: register query for the current poll
+        currentVehicleId = vehicle.vehicleId;
+        currentVehicleCallback = createCurrentPollUpdateCallbackForQuery(currentVehicleId);
+        transitFirebaseRef.child("polls").child(currentVehicleId).on('value', currentVehicleCallback);
+
     });
     return marker;
 }
 
-$(".selected_poll").on("click", "button", function(evt){
+var currentVehicleId = null;
+var currentVehicleCallback = null;
+
+function vote(evt){
     var vehicleId = $(evt.target).data("vehicleid");
     var answerText = $(evt.target).text();
     var vehicle = vehiclesInQuery[vehicleId];
-    var patch = {}
+    var patch = {};
     patch[answerText] = vehicle.answers[answerText] + 1;
     transitFirebaseRef.child("polls").child(vehicleId).child("answers").update(patch);
-});
+}
+
+$(".selected_poll").on("click", "button", vote);
+
+
+// Feature: setup a query so that if someone votes for the data of the current poll,
+// the view is updated
+//
+// when the current poll is replaced with another poll,
+// then the query is updated / replaced
+
+function createCurrentPollUpdateCallbackForQuery(vehicleId) {
+    var queryCallback = function (dataSnapshot) {
+
+        vehicle = dataSnapshot.val();
+        // If the vehicle has not already exited this query in the time it took to look up its data in the Open Data
+        // Set, add it to the map
+
+        if (vehicle !== null && vehiclesInQuery[vehicleId]) {
+
+            vehicle.vehicleId = vehicleId;
+            vehiclesInQuery[vehicleId] = vehicle;
+
+            // update the div ".selected_poll"
+            vehicle.answersMustache = [];
+            jQuery.each( vehicle.answers, function(key, value) {
+                vehicle.answersMustache.push({text: key, votes: value});
+            });
+            var input = $(".selected_poll_template").html();
+            var output = Mustache.render(input, vehicle);
+            $(".selected_poll").html(output);
+        }
+    };
+
+    return queryCallback;
+}
+
+
 
 /* Returns true if the two inputted coordinates are approximately equivalent */
 function coordinatesAreEquivalent(coord1, coord2) {
