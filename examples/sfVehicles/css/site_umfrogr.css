@@ -20,3 +20,13 @@
     border: 1px solid black;
     padding: 10px;
 }
+
+.poll_max_age {
+    width: 80px;
+}
+
+h3 {
+    background-color: lightgray;
+    padding:3px;
+    padding-left: 10px;
+}

@@ -83,6 +83,10 @@ geoQuery.on("key_exited", function (vehicleId, vehicleLocation) {
 
     // Remove the vehicle from the list of vehicles in the query
     delete vehiclesInQuery[vehicleId];
+
+    if (currentVehicleId === vehicleId) {
+        $(".selected_poll").html("");
+    }
 });
 
 /*****************/
@@ -135,10 +139,12 @@ var setPositionInNewPoll = function(evt) {
 
 var createPoll = function(evt) {
     var val = eval("x = " + $("#new_poll").val());
+    val.created_at3 = new Date().getTime();
 
     // create poll
     var newChildRef = transitFirebaseRef.child("polls").push(); // this new, empty ref only exists locally
     var newChildKey = newChildRef.key(); // we can get its id using key()
+    val.verhicleId = newChildKey;
     newChildRef.set(val);
 
     // create location entry
@@ -220,6 +226,7 @@ function createCurrentPollUpdateCallbackForQuery(vehicleId) {
         if (vehicle !== null && vehiclesInQuery[vehicleId]) {
 
             vehicle.vehicleId = vehicleId;
+            vehicle.marker = vehiclesInQuery[vehicleId].marker; // copy marker
             vehiclesInQuery[vehicleId] = vehicle;
 
             // update the div ".selected_poll"
@@ -267,3 +274,29 @@ google.maps.Marker.prototype.animatedMoveTo = function (newLocation) {
         }.bind(this), 50);
     }
 };
+
+// delete polls that are older than a specified max age
+var currentDeleteCallback = null;
+
+window.setInterval(function() {
+    if (currentDeleteCallback != null) {
+        transitFirebaseRef.child("polls").off("child_added", currentDeleteCallback);
+    }
+    currentDeleteCallback = function(snapshot) {
+
+        var maxAge = parseInt($(".poll_max_age").val()) * 1000;
+        var createdAtUpperLimit = new Date().getTime() - maxAge;
+        vehicle = snapshot.val();
+        if (vehicle.created_at3 < createdAtUpperLimit) { // "child added" is apparently called when data changes as well
+            var vehicleId = snapshot.key();
+            transitFirebaseRef.child("polls").child(vehicleId).remove();
+            transitFirebaseRef.child("_geofire").child("demo:" + vehicleId).remove();
+        }
+    };
+
+    var maxAge = parseInt($(".poll_max_age").val()) * 1000;
+    var createdAtUpperLimit = new Date().getTime() - maxAge;
+    transitFirebaseRef.child("polls").orderByChild("created_at3").endAt(createdAtUpperLimit).on("child_added", currentDeleteCallback);
+}, 1000); // called every second (in production should we choose 1h or something?)
+
+

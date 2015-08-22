@@ -26,6 +26,7 @@
 
     <section class="content">
       <h3>Create New Poll</h3>
+      <p>Click on the map to choose another location.</p>
       <p>
         <textarea id="new_poll">{
   "latLng": {
@@ -43,6 +44,7 @@
         <br/>
         <button id="btn_create_poll" type="submit">Create Poll</button>
       </p>
+
       <h3>Selected Poll</h3>
       <div class="selected_poll"></div>
       <div class="selected_poll_template">
@@ -54,6 +56,9 @@
           </ul>
       </div>
       <p></p>
+
+      <h3>Poll Deletion</h3>
+      <p>Polls are deleted after: <input class="poll_max_age" type="number" value="3600" /> seconds.</p>
 
       <h3>Links</h3>
       <p>
